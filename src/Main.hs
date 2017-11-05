@@ -418,6 +418,27 @@ prop_myUnfoldN :: (Int -> Bool) -> (Int -> Int) -> Int -> Bool
 prop_myUnfoldN p f x =
     takeN 100 (unfoldN p f x) == takeN 100 (myUnfoldN p f x)
 
+-- exercise 3.23
+
+divN :: Nat -> Nat -> Nat
+divN n m = unfoldN (isNothing . flip subN m) (fromJust . flip subN m) n
+
+prop_divN :: Nat -> Nat -> Property
+prop_divN n m =
+    forAll (fmap (toN . (+1)) arbitrarySizedNatural) $ \m ->
+        divN n m == toN (fromN n `div` fromN m)
+
+-- exercise 3.24
+
+logN :: Nat -> Nat
+logN = unfoldN (flip lessN (Succ Zero)) (flip divN (Succ (Succ Zero)))
+
+prop_logN :: Nat -> Property
+prop_logN n =
+    forAll (fmap (toN . (+1)) arbitrarySizedNatural) $ \n ->
+        logN n == toN (floor (logBase 2 (fromIntegral $ fromN n)))
+
+
 main :: IO ()
 main = do
     putStrLn "Testing prop_mapL..."
@@ -472,4 +493,8 @@ main = do
     quickCheck prop_myUnfoldN'
     putStrLn "Testing prop_myUnfoldN..."
     quickCheck prop_myUnfoldN
+    putStrLn "Testing prop_divN..."
+    quickCheck prop_divN
+    putStrLn "Testing prop_logN..."
+    quickCheck prop_logN
     putStrLn $ "hello world"
