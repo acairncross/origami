@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Main where
 
@@ -438,63 +439,8 @@ prop_logN n =
     forAll (fmap (toN . (+1)) arbitrarySizedNatural) $ \n ->
         logN n == toN (floor (logBase 2 (fromIntegral $ fromN n)))
 
+return []
+runTests = $quickCheckAll
 
 main :: IO ()
-main = do
-    putStrLn "Testing prop_mapL..."
-    quickCheck prop_mapL
-    putStrLn "Testing prop_appendL..."
-    quickCheck prop_appendL
-    putStrLn "Testing prop_concatL..."
-    quickCheck prop_concatL
-    putStrLn "Testing prop_insert1..."
-    quickCheck prop_insert1
-    putStrLn "Testing prop_insertP..."
-    quickCheck prop_insertP
-    putStrLn "Testing prop_myUnfoldL..."
-    quickCheck prop_myUnfoldL
-    putStrLn "Testing prop_myUnfoldL'..."
-    quickCheck prop_myUnfoldL'
-    putStrLn "Testing prop_myFoldL..."
-    quickCheck prop_myFoldL
-    putStrLn "Testing prop_myFoldL'..."
-    quickCheck prop_myFoldL'
-    putStrLn "Testing prop_foldLargs..."
-    quickCheck prop_foldLargs
-    putStrLn "Testing prop_unfoldLargs..."
-    quickCheck prop_unfoldLargs
-    putStrLn "Testing prop_deleteL'..."
-    quickCheck prop_deleteL'
-    putStrLn "Testing prop_delmin'..."
-    quickCheck prop_delmin'
-    putStrLn "Testing prop_bsort'..."
-    quickCheck prop_bsort'
-    putStrLn "Testing prop_insertU..."
-    quickCheck prop_insertU
-    putStrLn "Testing prop_insertA..."
-    quickCheck prop_insertA
-    putStrLn "Testing prop_myFoldN..."
-    quickCheck prop_myFoldN
-    putStrLn "Testing prop_myFoldN'..."
-    quickCheck prop_myFoldN'
-    putStrLn "Testing prop_addN..."
-    quickCheck prop_addN
-    putStrLn "Testing prop_mulN..."
-    quickCheck prop_mulN
-    putStrLn "Testing prop_powN..."
-    quickCheck prop_powN
-    putStrLn "Testing prop_predN'..."
-    quickCheck prop_predN'
-    putStrLn "Testing prop_eqN..."
-    quickCheck prop_eqN
-    putStrLn "Testing prop_lessN..."
-    quickCheck prop_lessN
-    putStrLn "Testing prop_myUnfoldN'..."
-    quickCheck prop_myUnfoldN'
-    putStrLn "Testing prop_myUnfoldN..."
-    quickCheck prop_myUnfoldN
-    putStrLn "Testing prop_divN..."
-    quickCheck prop_divN
-    putStrLn "Testing prop_logN..."
-    quickCheck prop_logN
-    putStrLn $ "hello world"
+main = runTests >> return ()
