@@ -439,6 +439,27 @@ prop_logN n =
     forAll (fmap (toN . (+1)) arbitrarySizedNatural) $ \n ->
         logN n == toN (floor (logBase 2 (fromIntegral $ fromN n)))
 
+-- exercise 3.25
+
+hyloN' :: (Maybe a -> a) -> (a -> Maybe a) -> a -> a
+hyloN' f g = foldN' f . unfoldN' g
+
+myHyloN' :: (Maybe a -> a) -> (a -> Maybe a) -> a -> a
+myHyloN' f g = f . fmap (myHyloN' f g) . g
+
+-- prop_myHyloN' :: (Maybe Int -> Int) -> (Int -> Maybe Int) -> Int -> Bool
+-- prop_myHyloN' f g n = hyloN' f g n == myHyloN' f g n
+
+hyloL' :: (Maybe (b,c) -> c) -> (a -> Maybe (b,a)) -> a -> c
+hyloL' f g = foldL' f . unfoldL' g
+
+-- exercise 3.28
+
+fix :: (a -> a) -> a
+fix f = hyloL' (uncurry ($) . fromJust) (const (Just (f, undefined))) f
+
+-------------------------------------------------------------------------------
+
 return []
 runTests = $quickCheckAll
 
