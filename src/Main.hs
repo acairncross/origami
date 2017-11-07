@@ -9,11 +9,16 @@ import Test.QuickCheck
 import Text.Show.Functions
 import Data.Char (digitToInt)
 import Data.Maybe (isNothing)
+import Control.Monad
 
 data List a = Nil | Cons a (List a) deriving (Show, Eq, Functor)
 
 instance Arbitrary a => Arbitrary (List a) where
-    arbitrary = fmap toL (arbitrary :: Arbitrary a => Gen [a])
+    arbitrary = toL <$> (arbitrary :: Arbitrary a => Gen [a])
+
+instance CoArbitrary a => CoArbitrary (List a) where
+    coarbitrary Nil = variant 0
+    coarbitrary (Cons x xs) = variant 1 . coarbitrary (x,xs)
 
 toL :: [a] -> List a
 toL = foldr Cons Nil
@@ -457,6 +462,42 @@ hyloL' f g = foldL' f . unfoldL' g
 
 fix :: (a -> a) -> a
 fix f = hyloL' (uncurry ($) . fromJust) (const (Just (f, undefined))) f
+
+-- exercise 3.29
+
+data Rose a = Node a (Forest a) deriving (Show, Eq, Functor)
+type Forest a = List (Rose a)
+
+instance Arbitrary a => Arbitrary (Rose a) where
+    arbitrary = resize 4 (sized arbitrarySizedRose)
+
+arbitrarySizedRose :: Arbitrary a => Int -> Gen (Rose a)
+arbitrarySizedRose n =
+    Node <$> arbitrary
+         <*> (toL <$> resize n (listOf (arbitrarySizedRose (n-1))))
+
+foldR :: (a -> c -> b) -> (List b -> c) -> Rose a -> b
+foldR f g (Node a ts) = f a (foldF f g ts)
+
+foldF :: (a -> c -> b) -> (List b -> c) -> Forest a -> c
+foldF f g ts = g (mapL (foldR f g) ts)
+
+foldRose :: (a -> List b -> b) -> Rose a -> b
+foldRose f (Node a ts) = f a (mapL (foldRose f) ts)
+
+myFoldRose :: (a -> List b -> b) -> Rose a -> b
+myFoldRose f = foldR f id
+
+prop_myFoldRose :: (Int -> List Int -> Int) -> Rose Int -> Bool
+prop_myFoldRose f t = foldRose f t == myFoldRose f t
+
+myFoldR :: (a -> c -> b) -> (List b -> c) -> Rose a -> b
+myFoldR f g = foldRose h
+  where
+    h x ys = f x (g ys)
+
+prop_myFoldR :: (Int -> Int -> Int) -> (List Int -> Int) -> Rose Int -> Bool
+prop_myFoldR f g t = foldR f g t == myFoldR f g t
 
 -------------------------------------------------------------------------------
 
