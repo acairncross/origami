@@ -529,6 +529,34 @@ prop_myDft t = dft t == myDft t
 prop_myDff :: Forest Int -> Bool
 prop_myDff ts = dff ts == myDff ts
 
+-- exercise 3.32
+
+levelt :: Rose a -> List (List a)
+levelf :: Forest a -> List (List a)
+(levelt, levelf) = (foldR f g, foldF f g)
+  where
+    f x xss = Cons (wrap x) xss
+    g = foldL (lzw appendL) Nil
+
+lzw :: (a -> a -> a) -> List a -> List a -> List a
+lzw f Nil ys = ys
+lzw f xs Nil = xs
+lzw f (Cons x xs) (Cons y ys) = Cons (f x y) (lzw f xs ys)
+
+myLzw :: (a -> a -> a) -> List a -> List a -> List a
+myLzw f xs ys = unfoldL p g h (xs,ys)
+  where
+    p (Nil,Nil) = True
+    p _         = False
+    g (Cons x _,  Cons y _ ) = f x y
+    g (Cons x _,  Nil      ) = x
+    g (Nil,       Cons y _ ) = y
+    h (Cons _ xs, Cons _ ys) = (xs,  ys )
+    h (Cons _ xs, Nil      ) = (xs,  Nil)
+    h (Nil,       Cons _ ys) = (Nil, ys )
+
+prop_myLzw :: (Int -> Int -> Int) -> List Int -> List Int -> Bool
+prop_myLzw f xs ys = lzw f xs ys == myLzw f xs ys
 
 -------------------------------------------------------------------------------
 
