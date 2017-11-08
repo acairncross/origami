@@ -548,15 +548,28 @@ myLzw f xs ys = unfoldL p g h (xs,ys)
   where
     p (Nil,Nil) = True
     p _         = False
-    g (Cons x _,  Cons y _ ) = f x y
-    g (Cons x _,  Nil      ) = x
-    g (Nil,       Cons y _ ) = y
+    g (Cons x _ , Cons y _ ) = f x y
+    g (Cons x _ , Nil      ) = x
+    g (Nil      , Cons y _ ) = y
     h (Cons _ xs, Cons _ ys) = (xs,  ys )
     h (Cons _ xs, Nil      ) = (xs,  Nil)
-    h (Nil,       Cons _ ys) = (Nil, ys )
+    h (Nil      , Cons _ ys) = (Nil, ys )
 
 prop_myLzw :: (Int -> Int -> Int) -> List Int -> List Int -> Bool
 prop_myLzw f xs ys = lzw f xs ys == myLzw f xs ys
+
+-- exercise 3.33
+
+myLzwA :: (a -> a -> a) -> List a -> List a -> List a
+myLzwA f xs ys = apoL' g (xs,ys)
+  where
+    g (Nil      , Nil      ) = Nothing
+    g (Cons x xs, Nil      ) = Just (x, Right xs)
+    g (Nil      , Cons y ys) = Just (y, Right ys)
+    g (Cons x xs, Cons y ys) = Just (f x y, Left (xs,ys))
+
+prop_myLzwA :: (Int -> Int -> Int) -> List Int -> List Int -> Bool
+prop_myLzwA f xs ys = lzw f xs ys == myLzwA f xs ys
 
 -------------------------------------------------------------------------------
 
