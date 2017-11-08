@@ -499,6 +499,37 @@ myFoldR f g = foldRose h
 prop_myFoldR :: (Int -> Int -> Int) -> (List Int -> Int) -> Rose Int -> Bool
 prop_myFoldR f g t = foldR f g t == myFoldR f g t
 
+-- exercise 3.31
+
+dft :: Rose a -> List a
+dff :: Forest a -> List a
+(dft, dff) = (foldR f g, foldF f g)
+  where
+    f = Cons
+    g = concatL
+
+type DList a = List a -> List a
+
+appD :: DList a -> List a
+appD xs = xs Nil
+
+consD :: a -> DList a -> DList a
+consD x xs = \ys -> Cons x (xs ys)
+
+concatD :: List (DList a) -> DList a
+concatD xss = \ys -> foldL ($) ys xss
+
+myDft :: Rose a -> List a
+myDff :: Forest a -> List a
+(myDft, myDff) = (appD . foldR consD concatD, appD . foldF consD concatD)
+
+prop_myDft :: Rose Int -> Bool
+prop_myDft t = dft t == myDft t
+
+prop_myDff :: Forest Int -> Bool
+prop_myDff ts = dff ts == myDff ts
+
+
 -------------------------------------------------------------------------------
 
 return []
