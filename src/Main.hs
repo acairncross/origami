@@ -499,6 +499,23 @@ myFoldR f g = foldRose h
 prop_myFoldR :: (Int -> Int -> Int) -> (List Int -> Int) -> Rose Int -> Bool
 prop_myFoldR f g t = foldR f g t == myFoldR f g t
 
+-- exercise 3.30
+
+-- Universal property
+--   k (Node a ts) = f a (g (mapL k ts)) iff k = foldR f g
+
+-- Fusion law
+--   h . foldR f g = foldR f' g'
+-- ⇔ h (f a (g (mapL (foldR f g) ts))) = f' a (g' (mapL (h . foldR f g) ts))
+-- ⇐ h (f x y) = f' x (h y)                                                 (1)
+--   ∧ h (g z) = g' (mapL h z)                                              (2)
+-- Proof of implication
+--   h . foldR f g (Node a ts)
+-- = h (f a (g (mapL (foldR f g) ts)))
+-- = f' a (h (g (mapL (foldR f g) ts)))                                   [(1)]
+-- = f' a (g' (mapL h (mapL (foldR f g) ts)))                             [(2)]
+-- = f' a (g' (mapL (h . foldR f g) ts))                                 [mapL]
+
 -- exercise 3.31
 
 dft :: Rose a -> List a
@@ -528,6 +545,30 @@ prop_myDft t = dft t == myDft t
 
 prop_myDff :: Forest Int -> Bool
 prop_myDff ts = dff ts == myDff ts
+
+-- Looks like the condition for the fusion law described above is too strict:
+
+-- Condition (1) is satisfied:
+--   h (f x y)
+-- = ($ Nil) (consD x y)
+-- = consD x y Nil
+-- = Cons x (y Nil)
+-- = Cons x (($ Nil) y)
+-- = f' x (h y)
+
+-- But for condition (2):
+--   h (g z)
+-- = ($ Nil) (concatD z)
+-- = concatD z Nil
+-- = foldL ($) Nil z
+-- ≠ foldL (appendL . ($ Nil)) Nil z                                        (*)
+-- = foldL appendL Nil (mapL ($ Nil) z)                                (Ex 3.3)
+-- = concatL (mapL ($ Nil) z)
+-- = g' (mapL h z)
+
+-- Where (*) is generally an inequality, even though it is an equality for the
+-- z we are interested in, so there is probably a version of the fusion law
+-- with a weaker condition.
 
 -- exercise 3.32
 
@@ -570,6 +611,9 @@ myLzwA f xs ys = apoL' g (xs,ys)
 
 prop_myLzwA :: (Int -> Int -> Int) -> List Int -> List Int -> Bool
 prop_myLzwA f xs ys = lzw f xs ys == myLzwA f xs ys
+
+prop_unk :: List (DList Int) -> Bool
+prop_unk xs = foldL ($) Nil xs == foldL (appendL . ($ Nil)) Nil xs
 
 -------------------------------------------------------------------------------
 
