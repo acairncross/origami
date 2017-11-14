@@ -508,7 +508,7 @@ prop_myFoldR f g t = foldR f g t == myFoldR f g t
 --   h . foldR f g = foldR f' g'
 -- ⇔ h (f a (g (mapL (foldR f g) ts))) = f' a (g' (mapL (h . foldR f g) ts))
 -- ⇐ h (f x y) = f' x (h y)                                                 (1)
---   ∧ h (g z) = g' (mapL h z)                                              (2)
+-- ∧ h (g z) = g' (mapL h z)                                                (2)
 -- Proof of implication
 --   h . foldR f g (Node a ts)
 -- = h (f a (g (mapL (foldR f g) ts)))
@@ -612,8 +612,29 @@ myLzwA f xs ys = apoL' g (xs,ys)
 prop_myLzwA :: (Int -> Int -> Int) -> List Int -> List Int -> Bool
 prop_myLzwA f xs ys = lzw f xs ys == myLzwA f xs ys
 
-prop_unk :: List (DList Int) -> Bool
-prop_unk xs = foldL ($) Nil xs == foldL (appendL . ($ Nil)) Nil xs
+-- exercise 3.34
+
+-- In the worst case, the left side of the tree will appear in the left side
+-- of append operations d times, where d is the depth of the tree, and
+-- and appending takes time proportional to the left argument.
+
+-- exercise 3.35
+
+-- ??
+
+levelt' :: Rose a -> List (List a) -> List (List a)
+levelf' :: Forest a -> List (List a) -> List (List a)
+(levelt', levelf') = (foldR f' g', foldF f' g')
+  where
+    f' x xss Nil = Cons (wrap x) (xss Nil)
+    f' x xss (Cons ys yss) = Cons (Cons x ys) (xss yss)
+    g' xsss yss = foldL ($) yss xsss
+
+prop_levelt' :: Rose Int -> List (List Int) -> Bool
+prop_levelt' t xss = lzw appendL (levelt t) xss == levelt' t xss
+
+prop_levelf' :: Forest Int -> List (List Int) -> Bool
+prop_levelf' ts xss = lzw appendL (levelf ts) xss == levelf' ts xss
 
 -------------------------------------------------------------------------------
 
